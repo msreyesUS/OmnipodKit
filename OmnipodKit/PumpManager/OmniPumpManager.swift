@@ -925,6 +925,10 @@ extension OmniPumpManager {
             } else if let podTimeRemaining = podTimeRemaining, podTimeRemaining <= 0 {
                 // Pod is expired
                 return PumpLifecycleProgress(percentComplete: 1, progressState: .critical)
+            } else if let podTimeRemaining = podTimeRemaining, podTimeRemaining > 0 {
+                // Show pod life progress throughout normal pod life
+                let percentCompleted = max(0, min(1, (1 - (podTimeRemaining / Pod.nominalPodLife))))
+                return PumpLifecycleProgress(percentComplete: percentCompleted, progressState: .normalPump)
             }
             return nil
         case .fault(let detail):
