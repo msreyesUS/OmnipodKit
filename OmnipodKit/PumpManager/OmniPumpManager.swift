@@ -920,8 +920,9 @@ extension OmniPumpManager {
             if shouldWarnPodEOL,
                let podTimeRemaining = podTimeRemaining
             {
+                // Keep the normal pump color rather than switching to the warning color
                 let percentCompleted = max(0, min(1, (1 - (podTimeRemaining / Pod.nominalPodLife))))
-                return PumpLifecycleProgress(percentComplete: percentCompleted, progressState: .warning)
+                return PumpLifecycleProgress(percentComplete: percentCompleted, progressState: .normalPump)
             } else if let podTimeRemaining = podTimeRemaining, podTimeRemaining <= 0 {
                 // Pod is expired
                 return PumpLifecycleProgress(percentComplete: 1, progressState: .critical)
