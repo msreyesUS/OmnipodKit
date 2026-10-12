@@ -1028,14 +1028,16 @@ extension OmniPumpManager {
     func buildPumpLifecycleProgress(for state: OmniPumpManagerState) -> PumpLifecycleProgress? {
         switch podCommState {
         case .active:
-            if shouldWarnPodEOL,
-               let podTimeRemaining = podTimeRemaining
-            {
-                let percentCompleted = max(0, min(1, (1 - (podTimeRemaining / Pod.nominalPodLife))))
-                return PumpLifecycleProgress(percentComplete: percentCompleted, progressState: .warning)
-            } else if let podTimeRemaining = podTimeRemaining, podTimeRemaining <= 0 {
-                // Pod is expired
-                return PumpLifecycleProgress(percentComplete: 1, progressState: .critical)
+            if let podTimeRemaining = podTimeRemaining {
+                guard podTimeRemaining > 0 else {
+                    // Pod is expired
+                    return PumpLifecycleProgress(percentComplete: 0, progressState: .critical)
+                }
+                // The bar shows time remaining: it starts full and depletes as the pod
+                // ages, changing color for the final four hours before expiration
+                let remainingFraction = max(0, min(1, podTimeRemaining / Pod.nominalPodLife))
+                let progressState: DeviceLifecycleProgressState = podTimeRemaining < TimeInterval(hours: 4) ? .warning : .normalPump
+                return PumpLifecycleProgress(percentComplete: remainingFraction, progressState: progressState)
             }
             return nil
         case .fault(let detail):
